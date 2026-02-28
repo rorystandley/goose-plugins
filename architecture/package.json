@@ -29,6 +29,7 @@
     "likec4"
   ],
   "license": "MIT",
+  "author": "Rory Standley",
   "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/architecture",
   "repository": {
     "type": "git",
