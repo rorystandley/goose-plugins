@@ -1,6 +1,6 @@
 # goose-plugins
 
-A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins, published to npm under the `@goose-tools` scope.
+A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins, published to npm under the `@goose-plugins` scope.
 
 [![CI](https://github.com/rorystandley/goose-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/rorystandley/goose-plugins/actions/workflows/ci.yml)
 
@@ -10,17 +10,17 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 
 | Package | Description |
 |---|---|
-| [`@goose-tools/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
+| [`@goose-plugins/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
 
 ---
 
 ## Using a plugin
 
 ```bash
-npm install @goose-tools/architecture
+npm install @goose-plugins/architecture
 ```
 
-Goose auto-discovers any `@goose-tools/*` package in `node_modules` — restart Goose after installing. See the individual package README for full usage docs and configuration options.
+Goose auto-discovers any `@goose-plugins/*` package in `node_modules` — restart Goose after installing. See the individual package README for full usage docs and configuration options.
 
 ---
 
@@ -32,7 +32,7 @@ goose-plugins/
 │   └── workflows/
 │       ├── ci.yml          # runs tests for any changed package
 │       └── publish.yml     # publishes any package via tag
-├── architecture/           # @goose-tools/architecture
+├── architecture/           # @goose-plugins/architecture
 │   ├── index.js
 │   ├── store.js
 │   ├── tests/
@@ -71,7 +71,7 @@ Each package is tested against **Node 18 and Node 20**. Tests must pass on both 
 Publishing uses a tag convention: `<package-name>-v<semver>`.
 
 ```bash
-# Publish @goose-tools/architecture version 1.2.0
+# Publish @goose-plugins/architecture version 1.2.0
 git tag architecture-v1.2.0
 git push origin architecture-v1.2.0
 ```
@@ -81,7 +81,7 @@ git push origin architecture-v1.2.0
 1. Extracts `package=architecture` and `version=1.2.0` from the tag
 2. Runs `npm test` inside `architecture/` — the publish is aborted if tests fail
 3. Sets the version in `package.json` from the tag (no manual version bump needed)
-4. Publishes `@goose-tools/architecture@1.2.0` to npm with `--access public`
+4. Publishes `@goose-plugins/architecture@1.2.0` to npm with `--access public`
 
 ---
 
@@ -91,7 +91,7 @@ git push origin architecture-v1.2.0
 2. Add a `package.json`:
    ```json
    {
-     "name": "@goose-tools/<plugin-name>",
+     "name": "@goose-plugins/<plugin-name>",
      "version": "1.0.0",
      "type": "module",
      "engines": { "node": ">=18.0.0" }

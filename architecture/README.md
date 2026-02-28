@@ -1,4 +1,4 @@
-# @goose-tools/architecture
+# @goose-plugins/architecture
 
 Architecture memory and C4 Context diagram generator plugin for [Goose](https://github.com/rorystandley/goose).
 
@@ -51,10 +51,10 @@ Goose handles the rest — calling the tools, storing the data, and returning th
 ## Installation
 
 ```bash
-npm install @goose-tools/architecture
+npm install @goose-plugins/architecture
 ```
 
-Restart Goose — it auto-discovers any `@goose-tools/*` package in `node_modules`.
+Restart Goose — it auto-discovers any `@goose-plugins/*` package in `node_modules`.
 
 > **Want to build your own plugin?**
 > See the [Goose plugin guide](https://github.com/rorystandley/goose/blob/develop/docs/plugins.md) for the full plugin interface, local development workflow, and publishing instructions.

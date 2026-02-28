@@ -1,5 +1,5 @@
 {
-  "name": "@goose-tools/architecture",
+  "name": "@goose-plugins/architecture",
   "version": "1.0.0",
   "type": "module",
   "description": "Architecture memory and C4 diagram generator plugin for Goose",
@@ -21,7 +21,7 @@
   },
   "keywords": [
     "goose",
-    "goose-tools",
+    "goose-plugins",
     "architecture",
     "c4",
     "plantuml",
