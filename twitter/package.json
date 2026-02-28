@@ -1,0 +1,34 @@
+{
+  "name": "@goose-plugins/twitter",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Twitter/X plugin for Goose — read and write tweets as the assigned account",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "goose",
+    "goose-plugins",
+    "twitter",
+    "x"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "twitter-api-v2": "^1.18.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

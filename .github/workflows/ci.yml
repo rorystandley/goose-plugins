@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       architecture: ${{ steps.filter.outputs.architecture }}
+      twitter: ${{ steps.filter.outputs.twitter }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -24,6 +25,9 @@ jobs:
           filters: |
             architecture:
               - 'architecture/**'
+              - '.github/workflows/ci.yml'
+            twitter:
+              - 'twitter/**'
               - '.github/workflows/ci.yml'
 
   # ── @goose-tools/architecture ──────────────────────────────────────────────
@@ -50,6 +54,35 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: architecture/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test
+
+  # ── @goose-plugins/twitter ─────────────────────────────────────────────────
+  test-twitter:
+    needs: changes
+    if: needs.changes.outputs.twitter == 'true'
+    name: twitter / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18.x', '20.x']
+
+    defaults:
+      run:
+        working-directory: twitter
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: twitter/package-lock.json
 
       - run: npm ci
 
