@@ -36,15 +36,21 @@ TWITTER_API_TIER=basic
 
 If `TWITTER_API_TIER` is unset or set to an unrecognised value, all tools are enabled.
 
-### Scheduled missions (SCHEDULER_ALLOW_DANGEROUS)
+### Scheduled missions
 
-`twitter_post_tweet`, `twitter_reply_to_tweet`, and `twitter_follow_user` are marked `dangerous` and require human approval before running. In a scheduled/headless mission there is no human in the loop, so you must explicitly opt in:
+`twitter_post_tweet`, `twitter_reply_to_tweet`, and `twitter_follow_user` are marked `dangerous` and require human approval before running. In a scheduled/headless mission there is no human in the loop, so you must explicitly opt in per-mission in `missions.json`:
 
-```env
-SCHEDULER_ALLOW_DANGEROUS=true
+```json
+{
+  "name": "twitter-marketing",
+  "allowDangerous": true,
+  "task": "..."
+}
 ```
 
-This flag **only affects the scheduler** — when you interact with Goose directly (Slack, CLI, web) dangerous tools still require your approval as normal.
+This scopes the permission to just this mission. Other missions (free-thought, morning-briefing, etc.) remain protected and will never run dangerous tools.
+
+When interacting with Goose directly (Slack, CLI, web) dangerous tools still require your approval regardless of this setting.
 
 ## Installation
 
