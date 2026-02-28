@@ -277,6 +277,7 @@ describe('twitter_post_tweet', () => {
     const result = await tool.execute({ text: 'Hello from Goose!' });
     expect(result).toContain('999888777');
     expect(result).toContain('Tweet posted');
+    expect(result).toContain('Hello from Goose!');
   });
 
   it('returns error string on API error', async () => {

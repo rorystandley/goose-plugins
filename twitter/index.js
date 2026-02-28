@@ -298,8 +298,8 @@ const twitter_post_tweet = {
       const res = await client.v2.tweet(text);
       const id = res.data?.id;
       return id
-        ? `Tweet posted. ID: ${id} — https://twitter.com/i/web/status/${id}`
-        : 'Tweet posted.';
+        ? `Tweet posted: "${text}" — ID: ${id} — https://twitter.com/i/web/status/${id}`
+        : `Tweet posted: "${text}"`;
     } catch (err) {
       return handleError(err);
     }
