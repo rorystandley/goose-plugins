@@ -25,6 +25,10 @@ function handleError(err) {
       : 'unknown';
     return `Rate limited by Twitter. Resets at: ${ts}`;
   }
+  if (err?.code === 402) {
+    const detail = err.data?.detail ?? 'Monthly write credits exhausted.';
+    return `Twitter credits depleted (402): ${detail} Upgrade to Basic tier or wait for monthly reset.`;
+  }
   if (err?.code && err?.message) return `Twitter API error ${err.code}: ${err.message}`;
   return `Error: ${err?.message ?? String(err)}`;
 }

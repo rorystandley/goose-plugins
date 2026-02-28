@@ -354,3 +354,25 @@ describe('rate limit handling', () => {
     expect(result).toContain('Resets at:');
   });
 });
+
+// ── behaviour: credits depleted handling ──────────────────────────────────────
+
+describe('credits depleted handling', () => {
+  it('returns a clear credits depleted message when code is 402', async () => {
+    const err = Object.assign(new Error('Request failed with code 402'), {
+      code: 402,
+      data: {
+        title: 'CreditsDepleted',
+        detail: 'Your enrolled account does not have any credits to fulfill this request.',
+      },
+    });
+    getClient.mockReturnValue({
+      v2: { tweet: vi.fn().mockRejectedValue(err) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_post_tweet');
+    const result = await tool.execute({ text: 'test tweet' });
+    expect(result).toContain('credits depleted');
+    expect(result).toContain('402');
+    expect(result).toContain('monthly reset');
+  });
+});
