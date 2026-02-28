@@ -1,0 +1,61 @@
+name: CI
+
+# Runs tests for plugin packages that have changed.
+# To add a new plugin: add a filter entry in the "changes" job,
+# then add a corresponding test job following the same pattern.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Detect which packages have changed files
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      architecture: ${{ steps.filter.outputs.architecture }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            architecture:
+              - 'architecture/**'
+              - '.github/workflows/ci.yml'
+
+  # ── @goose-tools/architecture ──────────────────────────────────────────────
+  test-architecture:
+    needs: changes
+    if: needs.changes.outputs.architecture == 'true'
+    name: architecture / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18.x', '20.x']
+
+    defaults:
+      run:
+        working-directory: architecture
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: architecture/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test
+
+  # ── add future plugins below ───────────────────────────────────────────────
+  # 1. Add a filter entry above: my-plugin: - 'my-plugin/**'
+  # 2. Copy this job, rename it test-<my-plugin>, set needs.changes.outputs.<my-plugin>
+  #    and update working-directory + cache-dependency-path accordingly.

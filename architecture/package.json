@@ -1,0 +1,44 @@
+{
+  "name": "@goose-tools/architecture",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Architecture memory and C4 diagram generator plugin for Goose",
+  "exports": {
+    ".": "./index.js",
+    "./store.js": "./store.js"
+  },
+  "files": [
+    "index.js",
+    "store.js",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "goose",
+    "goose-tools",
+    "architecture",
+    "c4",
+    "plantuml",
+    "mermaid",
+    "likec4"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/architecture",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rorystandley/goose-plugins.git",
+    "directory": "architecture"
+  },
+  "bugs": {
+    "url": "https://github.com/rorystandley/goose-plugins/issues"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,0 +1,81 @@
+name: Publish plugin to npm
+
+# Triggered by a tag in the format <plugin>-v<semver>
+# e.g. architecture-v1.0.0, jira-v2.1.0
+#
+# The tag prefix determines which package directory to test and publish.
+# Tests must pass before the package is published.
+# No workflow changes needed when adding new plugins — just push the right tag.
+
+on:
+  push:
+    tags:
+      - '*-v[0-9]*'
+
+jobs:
+  test:
+    name: Test before publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse package name from tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PACKAGE="${TAG%-v*}"
+          VERSION="${TAG#*-v}"
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: npm
+          cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
+
+      - run: npm ci
+        working-directory: ${{ steps.tag.outputs.package }}
+
+      - run: npm test
+        working-directory: ${{ steps.tag.outputs.package }}
+
+  publish:
+    name: Publish to npm
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # enables npm provenance attestation
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse package name from tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PACKAGE="${TAG%-v*}"
+          VERSION="${TAG#*-v}"
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+          cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
+
+      - run: npm ci
+        working-directory: ${{ steps.tag.outputs.package }}
+
+      - name: Set version from tag
+        run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version
+        working-directory: ${{ steps.tag.outputs.package }}
+
+      - name: Publish
+        run: npm publish --access public
+        working-directory: ${{ steps.tag.outputs.package }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
