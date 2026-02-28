@@ -6,38 +6,45 @@ Twitter/X plugin for [Goose](https://github.com/rorystandley/goose) — assign a
 
 ### Twitter/X API Access
 
-> **Important:** Most features require the **Basic tier** ($100/month). The free tier supports posting only.
+Sign up at [developer.x.com](https://developer.x.com) and create an app with **OAuth 1.0a** and **Read and Write** permissions.
 
-| Tier | Cost | Supported tools |
-|------|------|-----------------|
-| Free | $0 | `twitter_post_tweet`, `twitter_reply_to_tweet` only |
-| Basic | $100/month | All 10 tools |
+> **Important:** All new developer accounts are on the **pay-per-use** pricing model. There are no subscription tiers for new sign-ups. You must add credits via **Billing → Credits** in the developer console before any API calls will succeed. A small balance ($5–$10) covers hundreds of tweets.
 
-Sign up at [developer.twitter.com](https://developer.twitter.com) and create an app with **OAuth 1.0a** and **Read and Write** permissions.
+> **Read tools** (`twitter_search_tweets`, `twitter_get_timeline`, etc.) require a higher access level than write-only. Set `TWITTER_API_TIER=free` if your account only has write access, to avoid Goose attempting calls that will fail.
+
+| `TWITTER_API_TIER` | Tools available |
+|--------------------|-----------------|
+| `free` | `twitter_post_tweet`, `twitter_reply_to_tweet` only |
+| `basic` (default) | All 10 tools — read + write |
 
 ### Environment Variables
 
 Add these to Goose's `.env` file:
 
 ```env
-# OAuth 1.0a credentials (from developer.twitter.com → your app → Keys and Tokens)
+# OAuth 1.0a credentials (from developer.x.com → your app → Keys and Tokens)
 TWITTER_API_KEY=your_consumer_key
 TWITTER_API_SECRET=your_consumer_secret
 TWITTER_ACCESS_TOKEN=your_access_token
 TWITTER_ACCESS_TOKEN_SECRET=your_access_token_secret
 
-# Set to match your API access tier — controls which tools Goose can use
-# free  → post and reply only (no read access)
+# Set based on your API access level — controls which tools Goose can use
+# free  → post and reply only
 # basic → all tools, read + write [default]
 TWITTER_API_TIER=basic
 ```
 
-| `TWITTER_API_TIER` | Cost | Tools available |
-|--------------------|------|-----------------|
-| `free` | $0 | `twitter_post_tweet`, `twitter_reply_to_tweet` |
-| `basic` (default) | $100/month | All 10 tools |
+If `TWITTER_API_TIER` is unset or set to an unrecognised value, all tools are enabled.
 
-If `TWITTER_API_TIER` is unset or set to an unrecognised value, all tools are enabled (assumes basic access).
+### Scheduled missions (SCHEDULER_ALLOW_DANGEROUS)
+
+`twitter_post_tweet`, `twitter_reply_to_tweet`, and `twitter_follow_user` are marked `dangerous` and require human approval before running. In a scheduled/headless mission there is no human in the loop, so you must explicitly opt in:
+
+```env
+SCHEDULER_ALLOW_DANGEROUS=true
+```
+
+This flag **only affects the scheduler** — when you interact with Goose directly (Slack, CLI, web) dangerous tools still require your approval as normal.
 
 ## Installation
 
