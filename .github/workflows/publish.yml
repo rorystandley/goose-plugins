@@ -71,7 +71,7 @@ jobs:
         working-directory: ${{ steps.tag.outputs.package }}
 
       - name: Set version from tag
-        run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version
+        run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version --allow-same-version
         working-directory: ${{ steps.tag.outputs.package }}
 
       - name: Publish
