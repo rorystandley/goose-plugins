@@ -63,8 +63,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
+
+      # Remove empty _authToken that setup-node writes so OIDC trusted publisher can take over
+      - run: npm config delete //registry.npmjs.org/:_authToken
 
       - run: npm ci
         working-directory: ${{ steps.tag.outputs.package }}
