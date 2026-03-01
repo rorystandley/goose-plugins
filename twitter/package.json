@@ -26,7 +26,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/rorystandley/goose-plugins"
+    "url": "git+https://github.com/rorystandley/goose-plugins.git",
+    "directory": "twitter"
+  },
+  "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/twitter",
+  "bugs": {
+    "url": "https://github.com/rorystandley/goose-plugins/issues"
   },
   "license": "MIT",
   "dependencies": {

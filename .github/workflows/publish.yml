@@ -63,15 +63,12 @@ jobs:
           echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '22.x'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
-
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@latest
 
       - run: npm ci
         working-directory: ${{ steps.tag.outputs.package }}
@@ -80,18 +77,6 @@ jobs:
         run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version --allow-same-version
         working-directory: ${{ steps.tag.outputs.package }}
 
-      - name: Remove npm auth to enable OIDC
-        # setup-node writes both _authToken=INTENTIONALLY_INVALID and always-auth=true into .npmrc.
-        # always-auth=true forces npm to require credentials for every request — with no token,
-        # it gives ENEEDAUTH instead of falling through to OIDC. Delete both to allow npm 11+
-        # to detect ACTIONS_ID_TOKEN_REQUEST_URL and exchange the GitHub OIDC token for auth.
-        run: |
-          npm config delete //registry.npmjs.org/:_authToken
-          npm config delete always-auth
-
       - name: Publish
-        run: npm publish
+        run: npm publish --access public
         working-directory: ${{ steps.tag.outputs.package }}
-        env:
-          NPM_CONFIG_PROVENANCE: "true"
-          NPM_CONFIG_ACCESS: "public"
