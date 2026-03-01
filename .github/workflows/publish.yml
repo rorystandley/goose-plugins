@@ -80,13 +80,15 @@ jobs:
         run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version --allow-same-version
         working-directory: ${{ steps.tag.outputs.package }}
 
+      - name: Remove cached npm token to enable OIDC
+        # setup-node writes _authToken=INTENTIONALLY_INVALID into .npmrc (NPM_CONFIG_USERCONFIG).
+        # Deleting that entry entirely (not just emptying it) allows npm 11+ to detect the GitHub
+        # Actions OIDC environment and exchange the OIDC token with the npm registry for auth.
+        run: npm config delete //registry.npmjs.org/:_authToken
+
       - name: Publish
         run: npm publish
         working-directory: ${{ steps.tag.outputs.package }}
         env:
           NPM_CONFIG_PROVENANCE: "true"
           NPM_CONFIG_ACCESS: "public"
-          # Empty string overrides setup-node's INTENTIONALLY_INVALID in the .npmrc _authToken field.
-          # npm@latest sees empty _authToken → no valid token → exchanges GitHub OIDC token
-          # with npm registry for a temporary access token → uses that for the PUT request.
-          NODE_AUTH_TOKEN: ''
