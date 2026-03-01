@@ -29,6 +29,10 @@ function handleError(err) {
     const detail = err.data?.detail ?? 'Monthly write credits exhausted.';
     return `Twitter credits depleted (402): ${detail} Upgrade to Basic tier or wait for monthly reset.`;
   }
+  if (err?.code === 403) {
+    const detail = err.data?.detail ?? err.message ?? 'Forbidden.';
+    return `Twitter API error 403: ${detail} Ensure your Twitter app has Read+Write permissions enabled in the Developer Portal and that your OAuth tokens were generated after enabling those permissions.`;
+  }
   if (err?.code && err?.message) return `Twitter API error ${err.code}: ${err.message}`;
   return `Error: ${err?.message ?? String(err)}`;
 }
