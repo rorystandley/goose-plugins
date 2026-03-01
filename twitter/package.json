@@ -11,6 +11,10 @@
     "client.js",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest"

@@ -66,7 +66,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
@@ -78,5 +77,5 @@ jobs:
         working-directory: ${{ steps.tag.outputs.package }}
 
       - name: Publish
-        run: npm publish --access public
+        run: npm publish
         working-directory: ${{ steps.tag.outputs.package }}
