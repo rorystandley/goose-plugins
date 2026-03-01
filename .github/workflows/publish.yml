@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # enables trusted publishing (no token needed) + provenance attestation
+      id-token: write  # provenance attestation
 
     steps:
       - uses: actions/checkout@v4
@@ -67,9 +67,6 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
-      # Remove empty _authToken that setup-node writes so OIDC trusted publisher can take over
-      - run: npm config delete //registry.npmjs.org/:_authToken
-
       - run: npm ci
         working-directory: ${{ steps.tag.outputs.package }}
 
@@ -80,3 +77,5 @@ jobs:
       - name: Publish
         run: npm publish --access public --provenance
         working-directory: ${{ steps.tag.outputs.package }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
