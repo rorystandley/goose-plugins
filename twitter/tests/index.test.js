@@ -350,7 +350,7 @@ describe('twitter_reply_to_tweet', () => {
     expect(result).toContain('Reply posted');
   });
 
-  it('returns 403 error with permissions guidance when app lacks write access', async () => {
+  it('returns 403 error with permissions guidance for auth-type errors', async () => {
     const err = Object.assign(new Error('Forbidden'), {
       code: 403,
       data: { detail: 'You are not permitted to create a Tweet on behalf of this user.' },
@@ -363,6 +363,21 @@ describe('twitter_reply_to_tweet', () => {
     expect(typeof result).toBe('string');
     expect(result).toContain('403');
     expect(result).toContain('Read+Write permissions');
+  });
+
+  it('returns 403 error with account restriction hint for non-permission errors', async () => {
+    const err = Object.assign(new Error('Forbidden'), {
+      code: 403,
+      data: { detail: 'Replies are restricted for this tweet.' },
+    });
+    getClient.mockReturnValue({
+      v2: { reply: vi.fn().mockRejectedValue(err) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_reply_to_tweet');
+    const result = await tool.execute({ tweetId: '111222333', text: 'test reply' });
+    expect(typeof result).toBe('string');
+    expect(result).toContain('403');
+    expect(result).toContain('account-level restriction');
   });
 });
 

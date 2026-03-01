@@ -31,7 +31,11 @@ function handleError(err) {
   }
   if (err?.code === 403) {
     const detail = err.data?.detail ?? err.message ?? 'Forbidden.';
-    return `Twitter API error 403: ${detail} Ensure your Twitter app has Read+Write permissions enabled in the Developer Portal and that your OAuth tokens were generated after enabling those permissions.`;
+    const isPermissionsIssue = /permission|authorized|Read.Write|not permitted/i.test(detail);
+    const hint = isPermissionsIssue
+      ? ' Check your Twitter app has Read+Write permissions enabled in the Developer Portal and regenerate your OAuth tokens after changing them.'
+      : ' This may be a Twitter account-level restriction (new accounts are limited from replying) or the target tweet has restricted replies.';
+    return `Twitter API error 403: ${detail}${hint}`;
   }
   if (err?.code && err?.message) return `Twitter API error ${err.code}: ${err.message}`;
   return `Error: ${err?.message ?? String(err)}`;

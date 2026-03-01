@@ -1,6 +1,6 @@
 {
   "name": "@goose-plugins/twitter",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "type": "module",
   "description": "Twitter/X plugin for Goose — read and write tweets as the assigned account",
   "exports": {
