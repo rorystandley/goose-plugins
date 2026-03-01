@@ -24,6 +24,10 @@
     "twitter",
     "x"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rorystandley/goose-plugins"
+  },
   "license": "MIT",
   "dependencies": {
     "twitter-api-v2": "^1.18.0"
