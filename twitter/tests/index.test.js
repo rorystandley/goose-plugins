@@ -337,6 +337,35 @@ describe('twitter_follow_user', () => {
   });
 });
 
+// ── behaviour: twitter_reply_to_tweet ────────────────────────────────────────
+
+describe('twitter_reply_to_tweet', () => {
+  it('returns confirmation with reply ID on success', async () => {
+    getClient.mockReturnValue({
+      v2: { reply: vi.fn().mockResolvedValue({ data: { id: '777666555' } }) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_reply_to_tweet');
+    const result = await tool.execute({ tweetId: '111222333', text: 'Great point!' });
+    expect(result).toContain('777666555');
+    expect(result).toContain('Reply posted');
+  });
+
+  it('returns 403 error with permissions guidance when app lacks write access', async () => {
+    const err = Object.assign(new Error('Forbidden'), {
+      code: 403,
+      data: { detail: 'You are not permitted to create a Tweet on behalf of this user.' },
+    });
+    getClient.mockReturnValue({
+      v2: { reply: vi.fn().mockRejectedValue(err) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_reply_to_tweet');
+    const result = await tool.execute({ tweetId: '111222333', text: 'test reply' });
+    expect(typeof result).toBe('string');
+    expect(result).toContain('403');
+    expect(result).toContain('Read+Write permissions');
+  });
+});
+
 // ── behaviour: rate limit handling ───────────────────────────────────────────
 
 describe('rate limit handling', () => {
