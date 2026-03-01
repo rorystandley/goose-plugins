@@ -69,12 +69,22 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
       - run: npm ci
         working-directory: ${{ steps.tag.outputs.package }}
 
       - name: Set version from tag
         run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version --allow-same-version
         working-directory: ${{ steps.tag.outputs.package }}
+
+      - name: Verify trusted publishing prerequisites
+        run: |
+          node -v
+          npm -v
+          test -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || { echo "Missing ACTIONS_ID_TOKEN_REQUEST_URL"; exit 1; }
+          test -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" || { echo "Missing ACTIONS_ID_TOKEN_REQUEST_TOKEN"; exit 1; }
 
       - name: Publish
         run: npm publish
