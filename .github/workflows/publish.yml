@@ -63,10 +63,12 @@ jobs:
           echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Verify no pre-existing npm token
+        run: test -z "${NODE_AUTH_TOKEN:-}" || { echo "NODE_AUTH_TOKEN already present before setup-node"; exit 1; }
+
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
@@ -86,7 +88,6 @@ jobs:
           npm -v
           test -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || { echo "Missing ACTIONS_ID_TOKEN_REQUEST_URL"; exit 1; }
           test -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" || { echo "Missing ACTIONS_ID_TOKEN_REQUEST_TOKEN"; exit 1; }
-          test -z "${NODE_AUTH_TOKEN:-}" || { echo "Unexpected NODE_AUTH_TOKEN is set"; exit 1; }
 
       - name: Publish
         run: npm publish
