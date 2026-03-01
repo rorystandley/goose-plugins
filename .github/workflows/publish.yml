@@ -66,12 +66,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
-          # No registry-url — avoids setup-node writing _authToken to .npmrc which blocks OIDC
+          registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
       - name: Upgrade npm for OIDC support
-        run: npm install -g npm@11.5.1
+        run: npm install -g npm@latest
 
       - run: npm ci
         working-directory: ${{ steps.tag.outputs.package }}
@@ -81,8 +81,10 @@ jobs:
         working-directory: ${{ steps.tag.outputs.package }}
 
       - name: Publish
-        run: npm publish --access public --provenance
+        run: npm publish
         working-directory: ${{ steps.tag.outputs.package }}
         env:
-          # Pass registry via env var — no .npmrc written, so npm 11.5.1+ uses OIDC for auth
-          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+          NPM_CONFIG_PROVENANCE: "true"
+          NPM_CONFIG_ACCESS: "public"
+          # No NODE_AUTH_TOKEN — setup-node's INTENTIONALLY_INVALID sentinel stays in place
+          # npm@latest treats INTENTIONALLY_INVALID as "no real token" → uses OIDC trusted publisher
