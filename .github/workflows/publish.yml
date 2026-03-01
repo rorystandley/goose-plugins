@@ -86,5 +86,7 @@ jobs:
         env:
           NPM_CONFIG_PROVENANCE: "true"
           NPM_CONFIG_ACCESS: "public"
-          # No NODE_AUTH_TOKEN — setup-node's INTENTIONALLY_INVALID sentinel stays in place
-          # npm@latest treats INTENTIONALLY_INVALID as "no real token" → uses OIDC trusted publisher
+          # Empty string overrides setup-node's INTENTIONALLY_INVALID in the .npmrc _authToken field.
+          # npm@latest sees empty _authToken → no valid token → exchanges GitHub OIDC token
+          # with npm registry for a temporary access token → uses that for the PUT request.
+          NODE_AUTH_TOKEN: ''
