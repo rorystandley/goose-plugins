@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # required for OIDC trusted publisher + provenance attestation
+      id-token: write  # provenance attestation
 
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          # No registry-url — avoids writing _authToken placeholder to .npmrc which blocks OIDC
+          registry-url: 'https://registry.npmjs.org'
           cache: npm
           cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
@@ -78,5 +78,4 @@ jobs:
         run: npm publish --access public --provenance
         working-directory: ${{ steps.tag.outputs.package }}
         env:
-          # Registry via env var — no .npmrc auth token written, so npm uses OIDC trusted publisher
-          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
