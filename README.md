@@ -12,6 +12,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 |---|---|
 | [`@goose-plugins/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
 | [`@goose-plugins/backup`](./backup) | Deterministic data directory snapshots with automatic pruning |
+| [`@goose-plugins/twitter`](./twitter) | Read and write tweets as the assigned Twitter/X account |
 
 ---
 
@@ -20,6 +21,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 ```bash
 npm install @goose-plugins/architecture
 npm install @goose-plugins/backup
+npm install @goose-plugins/twitter
 ```
 
 Goose auto-discovers any `@goose-plugins/*` package in `node_modules` — restart Goose after installing. See the individual package README for full usage docs and configuration options.
@@ -41,6 +43,11 @@ goose-plugins/
 │   └── package.json
 ├── backup/                 # @goose-plugins/backup
 │   ├── index.js
+│   ├── tests/
+│   └── package.json
+├── twitter/                # @goose-plugins/twitter
+│   ├── index.js
+│   ├── client.js
 │   ├── tests/
 │   └── package.json
 └── README.md
