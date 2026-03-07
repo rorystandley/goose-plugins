@@ -11,6 +11,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 | Package | Description |
 |---|---|
 | [`@goose-plugins/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
+| [`@goose-plugins/backup`](./backup) | Deterministic data directory snapshots with automatic pruning |
 
 ---
 
@@ -18,6 +19,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 
 ```bash
 npm install @goose-plugins/architecture
+npm install @goose-plugins/backup
 ```
 
 Goose auto-discovers any `@goose-plugins/*` package in `node_modules` — restart Goose after installing. See the individual package README for full usage docs and configuration options.
@@ -35,6 +37,10 @@ goose-plugins/
 ├── architecture/           # @goose-plugins/architecture
 │   ├── index.js
 │   ├── store.js
+│   ├── tests/
+│   └── package.json
+├── backup/                 # @goose-plugins/backup
+│   ├── index.js
 │   ├── tests/
 │   └── package.json
 └── README.md

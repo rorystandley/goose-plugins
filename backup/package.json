@@ -1,0 +1,44 @@
+{
+  "name": "@goose-plugins/backup",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Data backup plugin for Goose — deterministic snapshot of the data directory with automatic pruning",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "goose",
+    "goose-plugins",
+    "backup",
+    "snapshot"
+  ],
+  "license": "MIT",
+  "author": "Rory Standley",
+  "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/backup",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rorystandley/goose-plugins.git",
+    "directory": "backup"
+  },
+  "bugs": {
+    "url": "https://github.com/rorystandley/goose-plugins/issues"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
