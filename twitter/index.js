@@ -145,12 +145,17 @@ const twitter_get_timeline = {
       const count = Math.min(100, Math.max(5, maxResults));
       const res = await client.v2.userTimeline(userRes.data.id, {
         max_results: count,
-        'tweet.fields': ['created_at', 'text'],
+        'tweet.fields': ['created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
       });
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return `No recent tweets found for @${username}.`;
       return tweets
-        .map((t, i) => `[${i + 1}] (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`)
+        .map((t, i) => {
+          const replyTo = t.in_reply_to_user_id ? ` (in reply to user ${t.in_reply_to_user_id})` : '';
+          const refTweets = (t.referenced_tweets ?? []).map(r => `${r.type}:${r.id}`).join(', ');
+          const refs = refTweets ? ` [refs: ${refTweets}]` : '';
+          return `[${i + 1}] ID: ${t.id}${replyTo}${refs} (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`;
+        })
         .join('\n\n');
     } catch (err) {
       return handleError(err);
@@ -179,12 +184,25 @@ const twitter_get_mentions = {
       const count = Math.min(100, Math.max(5, maxResults));
       const res = await client.v2.userMentionTimeline(me.data.id, {
         max_results: count,
-        'tweet.fields': ['author_id', 'created_at', 'text'],
+        'tweet.fields': ['author_id', 'created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
+        expansions: ['author_id'],
+        'user.fields': ['username'],
       });
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return 'No recent mentions found.';
+      // Build author_id → username lookup from includes
+      const users = {};
+      for (const u of res.includes?.users ?? []) {
+        users[u.id] = u.username;
+      }
       return tweets
-        .map((t, i) => `[${i + 1}] @${t.author_id} (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`)
+        .map((t, i) => {
+          const username = users[t.author_id] ?? t.author_id;
+          const replyTo = t.in_reply_to_user_id ? ` (reply to user ${t.in_reply_to_user_id})` : '';
+          const refTweets = (t.referenced_tweets ?? []).map(r => `${r.type}:${r.id}`).join(', ');
+          const refs = refTweets ? ` [refs: ${refTweets}]` : '';
+          return `[${i + 1}] ID: ${t.id} | @${username}${replyTo}${refs} (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`;
+        })
         .join('\n\n');
     } catch (err) {
       return handleError(err);
@@ -213,12 +231,21 @@ const twitter_get_home_feed = {
       const count = Math.min(100, Math.max(1, maxResults));
       const res = await client.v2.homeTimeline({
         max_results: count,
-        'tweet.fields': ['author_id', 'created_at', 'text'],
+        'tweet.fields': ['author_id', 'created_at', 'text', 'referenced_tweets'],
+        expansions: ['author_id'],
+        'user.fields': ['username'],
       });
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return 'Home timeline is empty.';
+      const users = {};
+      for (const u of res.includes?.users ?? []) {
+        users[u.id] = u.username;
+      }
       return tweets
-        .map((t, i) => `[${i + 1}] @${t.author_id} (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`)
+        .map((t, i) => {
+          const username = users[t.author_id] ?? t.author_id;
+          return `[${i + 1}] ID: ${t.id} | @${username} (${t.created_at?.slice(0, 10) ?? ''})\n${t.text}`;
+        })
         .join('\n\n');
     } catch (err) {
       return handleError(err);
@@ -246,16 +273,23 @@ const twitter_get_tweet = {
       const idMatch = tweetId.match(/status\/(\d+)/);
       const id = idMatch ? idMatch[1] : tweetId;
       const res = await client.v2.singleTweet(id, {
-        'tweet.fields': ['author_id', 'created_at', 'text', 'public_metrics'],
+        'tweet.fields': ['author_id', 'created_at', 'text', 'public_metrics', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
+        expansions: ['author_id'],
+        'user.fields': ['username'],
       });
       const t = res.data;
       if (!t) return `Tweet ${id} not found.`;
       const m = t.public_metrics ?? {};
+      const authorUser = (res.includes?.users ?? []).find(u => u.id === t.author_id);
+      const authorName = authorUser ? authorUser.username : t.author_id;
+      const replyTo = t.in_reply_to_user_id ? `\nIn reply to user: ${t.in_reply_to_user_id}` : '';
+      const refTweets = (t.referenced_tweets ?? []).map(r => `${r.type}:${r.id}`).join(', ');
+      const refs = refTweets ? `\nReferenced tweets: ${refTweets}` : '';
       return [
-        `Tweet ${t.id} by @${t.author_id} (${t.created_at ?? ''})`,
+        `Tweet ${t.id} by @${authorName} (${t.created_at ?? ''})`,
         t.text,
         `Likes: ${m.like_count ?? 0} | Retweets: ${m.retweet_count ?? 0} | Replies: ${m.reply_count ?? 0}`,
-      ].join('\n');
+      ].join('\n') + replyTo + refs;
     } catch (err) {
       return handleError(err);
     }
