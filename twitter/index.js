@@ -69,12 +69,24 @@ const twitter_search_tweets = {
       const count = Math.min(100, Math.max(10, maxResults));
       const res = await client.v2.search(query, {
         max_results: count,
-        'tweet.fields': ['author_id', 'created_at', 'text'],
+        'tweet.fields': ['author_id', 'created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
+        expansions: ['author_id'],
+        'user.fields': ['username'],
       });
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return 'No tweets found for that query.';
+      const users = {};
+      for (const u of res.includes?.users ?? []) {
+        users[u.id] = u.username;
+      }
       return tweets
-        .map((t, i) => `[${i + 1}] @${t.author_id} (${t.created_at})\n${t.text}`)
+        .map((t, i) => {
+          const username = users[t.author_id] ?? t.author_id;
+          const replyTo = t.in_reply_to_user_id ? ` (reply to user ${t.in_reply_to_user_id})` : '';
+          const refTweets = (t.referenced_tweets ?? []).map(r => `${r.type}:${r.id}`).join(', ');
+          const refs = refTweets ? ` [refs: ${refTweets}]` : '';
+          return `[${i + 1}] ID: ${t.id} | @${username}${replyTo}${refs} (${t.created_at})\n${t.text}`;
+        })
         .join('\n\n');
     } catch (err) {
       return handleError(err);
