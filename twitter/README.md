@@ -15,7 +15,7 @@ Sign up at [developer.x.com](https://developer.x.com) and create an app with **O
 | `TWITTER_API_TIER` | Tools available |
 |--------------------|-----------------|
 | `free` | `twitter_post_tweet`, `twitter_reply_to_tweet` only |
-| `basic` (default) | All 10 tools — read + write |
+| `basic` (default) | All 11 tools — read + write |
 
 ### Environment Variables
 
@@ -71,6 +71,7 @@ Then restart Goose. The plugin is auto-discovered via the `@goose-plugins/*` nam
 | `twitter_get_timeline` | Get a user's recent tweets by username |
 | `twitter_get_mentions` | Get recent tweets that @-mention the authenticated account |
 | `twitter_get_home_feed` | Get the authenticated account's home timeline |
+| `twitter_get_tweet` | Fetch a single tweet by ID or URL |
 
 ### Write tools — moderate (run automatically with a warning)
 
@@ -101,6 +102,10 @@ What's on my Twitter home feed?
 
 ```
 Post a tweet saying "Excited to be using Goose AI today!"
+```
+
+```
+Get tweet https://x.com/someone/status/1234567890
 ```
 
 ```

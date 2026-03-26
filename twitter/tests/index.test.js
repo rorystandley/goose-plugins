@@ -20,8 +20,8 @@ describe('tools export', () => {
     expect(Array.isArray(tools)).toBe(true);
   });
 
-  it('exports all 10 tools when no tier is set (defaults to basic)', () => {
-    expect(tools).toHaveLength(10);
+  it('exports all 11 tools when no tier is set (defaults to basic)', () => {
+    expect(tools).toHaveLength(11);
   });
 
   it('exports the correct tool names in order', () => {
@@ -31,6 +31,7 @@ describe('tools export', () => {
       'twitter_get_timeline',
       'twitter_get_mentions',
       'twitter_get_home_feed',
+      'twitter_get_tweet',
       'twitter_like_tweet',
       'twitter_retweet',
       'twitter_post_tweet',
@@ -55,11 +56,11 @@ describe('TWITTER_API_TIER filtering', () => {
     vi.resetModules();
   });
 
-  it('basic tier exports all 10 tools', async () => {
+  it('basic tier exports all 11 tools', async () => {
     vi.stubEnv('TWITTER_API_TIER', 'basic');
     vi.resetModules();
     const { tools: tieredTools } = await import('../index.js');
-    expect(tieredTools).toHaveLength(10);
+    expect(tieredTools).toHaveLength(11);
     vi.unstubAllEnvs();
     vi.resetModules();
   });
@@ -68,7 +69,7 @@ describe('TWITTER_API_TIER filtering', () => {
     vi.stubEnv('TWITTER_API_TIER', 'enterprise');
     vi.resetModules();
     const { tools: tieredTools } = await import('../index.js');
-    expect(tieredTools).toHaveLength(10);
+    expect(tieredTools).toHaveLength(11);
     vi.unstubAllEnvs();
     vi.resetModules();
   });
@@ -106,7 +107,7 @@ describe('each tool has required Goose plugin interface fields', () => {
   });
 
   it('read tools have riskLevel "safe"', () => {
-    const readTools = ['twitter_search_tweets', 'twitter_get_user', 'twitter_get_timeline', 'twitter_get_mentions', 'twitter_get_home_feed'];
+    const readTools = ['twitter_search_tweets', 'twitter_get_user', 'twitter_get_timeline', 'twitter_get_mentions', 'twitter_get_home_feed', 'twitter_get_tweet'];
     for (const name of readTools) {
       const tool = tools.find(t => t.name === name);
       expect(tool.riskLevel, `${name} should be safe`).toBe('safe');
@@ -164,6 +165,13 @@ describe('twitter_reply_to_tweet parameters', () => {
     const tool = tools.find(t => t.name === 'twitter_reply_to_tweet');
     expect(tool.parameters.required).toContain('tweetId');
     expect(tool.parameters.required).toContain('text');
+  });
+});
+
+describe('twitter_get_tweet parameters', () => {
+  it('has required parameter: tweetId', () => {
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    expect(tool.parameters.required).toContain('tweetId');
   });
 });
 
@@ -397,6 +405,71 @@ describe('rate limit handling', () => {
     const result = await tool.execute({ query: 'test' });
     expect(result).toContain('Rate limited');
     expect(result).toContain('Resets at:');
+  });
+});
+
+// ── behaviour: twitter_get_tweet ──────────────────────────────────────────────
+
+describe('twitter_get_tweet', () => {
+  it('returns formatted tweet on success', async () => {
+    getClient.mockReturnValue({
+      v2: {
+        singleTweet: vi.fn().mockResolvedValue({
+          data: {
+            id: '123456',
+            author_id: 'user1',
+            text: 'Hello from Twitter!',
+            created_at: '2025-06-01T12:00:00Z',
+            public_metrics: { like_count: 10, retweet_count: 3, reply_count: 1 },
+          },
+        }),
+      },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    const result = await tool.execute({ tweetId: '123456' });
+    expect(result).toContain('Hello from Twitter!');
+    expect(result).toContain('@user1');
+    expect(result).toContain('Likes: 10');
+  });
+
+  it('returns "not found" when tweet does not exist', async () => {
+    getClient.mockReturnValue({
+      v2: { singleTweet: vi.fn().mockResolvedValue({ data: null }) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    const result = await tool.execute({ tweetId: '999' });
+    expect(result).toContain('not found');
+  });
+
+  it('extracts ID from a twitter.com URL', async () => {
+    const singleTweet = vi.fn().mockResolvedValue({
+      data: { id: '7890', author_id: 'u2', text: 'URL test', created_at: '2025-06-01T12:00:00Z', public_metrics: {} },
+    });
+    getClient.mockReturnValue({ v2: { singleTweet } });
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    await tool.execute({ tweetId: 'https://twitter.com/someone/status/7890' });
+    expect(singleTweet).toHaveBeenCalledWith('7890', expect.any(Object));
+  });
+
+  it('extracts ID from an x.com URL', async () => {
+    const singleTweet = vi.fn().mockResolvedValue({
+      data: { id: '4567', author_id: 'u3', text: 'X test', created_at: '2025-06-01T12:00:00Z', public_metrics: {} },
+    });
+    getClient.mockReturnValue({ v2: { singleTweet } });
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    await tool.execute({ tweetId: 'https://x.com/someone/status/4567' });
+    expect(singleTweet).toHaveBeenCalledWith('4567', expect.any(Object));
+  });
+
+  it('returns error string on API error', async () => {
+    const err = Object.assign(new Error('Not Found'), { code: 404 });
+    getClient.mockReturnValue({
+      v2: { singleTweet: vi.fn().mockRejectedValue(err) },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_tweet');
+    const result = await tool.execute({ tweetId: '000' });
+    expect(typeof result).toBe('string');
+    expect(result).toContain('404');
   });
 });
 

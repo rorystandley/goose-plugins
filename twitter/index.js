@@ -1,9 +1,9 @@
 /**
  * Twitter plugin for Goose.
  *
- * Provides 10 tools for interacting with Twitter/X as an assigned account:
+ * Provides 11 tools for interacting with Twitter/X as an assigned account:
  *   Read  (safe)     : twitter_search_tweets, twitter_get_user, twitter_get_timeline,
- *                      twitter_get_mentions, twitter_get_home_feed
+ *                      twitter_get_mentions, twitter_get_home_feed, twitter_get_tweet
  *   Write (moderate) : twitter_like_tweet, twitter_retweet
  *   Write (dangerous): twitter_post_tweet, twitter_reply_to_tweet, twitter_follow_user
  *
@@ -226,6 +226,42 @@ const twitter_get_home_feed = {
   },
 };
 
+const twitter_get_tweet = {
+  name: 'twitter_get_tweet',
+  description: 'Fetch a single tweet by its ID or URL. Returns the tweet text, author, and timestamp. Useful for reading a tweet before replying, liking, or retweeting.',
+  riskLevel: 'safe',
+  parameters: {
+    type: 'object',
+    properties: {
+      tweetId: {
+        type: 'string',
+        description: 'Tweet ID or URL (e.g. "1234567890" or "https://x.com/user/status/1234567890")',
+      },
+    },
+    required: ['tweetId'],
+  },
+  execute: async ({ tweetId }) => {
+    try {
+      const client = getClient();
+      const idMatch = tweetId.match(/status\/(\d+)/);
+      const id = idMatch ? idMatch[1] : tweetId;
+      const res = await client.v2.singleTweet(id, {
+        'tweet.fields': ['author_id', 'created_at', 'text', 'public_metrics'],
+      });
+      const t = res.data;
+      if (!t) return `Tweet ${id} not found.`;
+      const m = t.public_metrics ?? {};
+      return [
+        `Tweet ${t.id} by @${t.author_id} (${t.created_at ?? ''})`,
+        t.text,
+        `Likes: ${m.like_count ?? 0} | Retweets: ${m.retweet_count ?? 0} | Replies: ${m.reply_count ?? 0}`,
+      ].join('\n');
+    } catch (err) {
+      return handleError(err);
+    }
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Write tools — moderate (auto-executes, reversible social actions)
 // ---------------------------------------------------------------------------
@@ -388,6 +424,7 @@ const ALL_TOOLS = [
   twitter_get_timeline,
   twitter_get_mentions,
   twitter_get_home_feed,
+  twitter_get_tweet,
   twitter_like_tweet,
   twitter_retweet,
   twitter_post_tweet,
