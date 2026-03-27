@@ -144,6 +144,34 @@ describe('twitter_search_tweets parameters', () => {
     expect(tool.parameters.properties.maxResults).toBeDefined();
     expect(tool.parameters.required).not.toContain('maxResults');
   });
+
+  it('has optional parameters: sinceId and startTime', () => {
+    const tool = tools.find(t => t.name === 'twitter_search_tweets');
+    expect(tool.parameters.properties.sinceId).toBeDefined();
+    expect(tool.parameters.properties.startTime).toBeDefined();
+    expect(tool.parameters.required).not.toContain('sinceId');
+    expect(tool.parameters.required).not.toContain('startTime');
+  });
+});
+
+describe('twitter_get_timeline parameters', () => {
+  it('has optional parameters: sinceId and startTime', () => {
+    const tool = tools.find(t => t.name === 'twitter_get_timeline');
+    expect(tool.parameters.properties.sinceId).toBeDefined();
+    expect(tool.parameters.properties.startTime).toBeDefined();
+    expect(tool.parameters.required).not.toContain('sinceId');
+    expect(tool.parameters.required).not.toContain('startTime');
+  });
+});
+
+describe('twitter_get_mentions parameters', () => {
+  it('has optional parameters: sinceId and startTime', () => {
+    const tool = tools.find(t => t.name === 'twitter_get_mentions');
+    expect(tool.parameters.properties.sinceId).toBeDefined();
+    expect(tool.parameters.properties.startTime).toBeDefined();
+    expect(tool.parameters.required).not.toContain('sinceId');
+    expect(tool.parameters.required).not.toContain('startTime');
+  });
 });
 
 describe('twitter_get_user parameters', () => {
@@ -238,6 +266,31 @@ describe('twitter_search_tweets', () => {
     expect(typeof result).toBe('string');
     expect(result).toContain('401');
   });
+
+  it('passes since_id and start_time to the API when provided', async () => {
+    const search = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', author_id: 'user1', text: 'Test', created_at: '2025-01-01T10:00:00Z' }] },
+    });
+    getClient.mockReturnValue({ v2: { search } });
+    const tool = tools.find(t => t.name === 'twitter_search_tweets');
+    await tool.execute({ query: 'hello', sinceId: '100', startTime: '2025-01-01T00:00:00Z' });
+    expect(search).toHaveBeenCalledWith('hello', expect.objectContaining({
+      since_id: '100',
+      start_time: '2025-01-01T00:00:00Z',
+    }));
+  });
+
+  it('does not include since_id or start_time when not provided', async () => {
+    const search = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', author_id: 'user1', text: 'Test', created_at: '2025-01-01T10:00:00Z' }] },
+    });
+    getClient.mockReturnValue({ v2: { search } });
+    const tool = tools.find(t => t.name === 'twitter_search_tweets');
+    await tool.execute({ query: 'hello' });
+    const opts = search.mock.calls[0][1];
+    expect(opts).not.toHaveProperty('since_id');
+    expect(opts).not.toHaveProperty('start_time');
+  });
 });
 
 // ── behaviour: twitter_get_user ───────────────────────────────────────────────
@@ -271,6 +324,86 @@ describe('twitter_get_user', () => {
     const tool = tools.find(t => t.name === 'twitter_get_user');
     const result = await tool.execute({ username: 'doesnotexist12345' });
     expect(result).toContain('not found');
+  });
+});
+
+// ── behaviour: twitter_get_mentions time filtering ───────────────────────────
+
+describe('twitter_get_mentions time filtering', () => {
+  it('passes since_id and start_time to the API when provided', async () => {
+    const userMentionTimeline = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', author_id: 'user1', text: 'Hey!', created_at: '2025-01-01T10:00:00Z' }] },
+      includes: { users: [{ id: 'user1', username: 'someone' }] },
+    });
+    getClient.mockReturnValue({
+      v2: {
+        me: vi.fn().mockResolvedValue({ data: { id: 'me123' } }),
+        userMentionTimeline,
+      },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_mentions');
+    await tool.execute({ sinceId: '200', startTime: '2025-01-01T00:00:00Z' });
+    expect(userMentionTimeline).toHaveBeenCalledWith('me123', expect.objectContaining({
+      since_id: '200',
+      start_time: '2025-01-01T00:00:00Z',
+    }));
+  });
+
+  it('does not include since_id or start_time when not provided', async () => {
+    const userMentionTimeline = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', author_id: 'user1', text: 'Hey!', created_at: '2025-01-01T10:00:00Z' }] },
+      includes: { users: [{ id: 'user1', username: 'someone' }] },
+    });
+    getClient.mockReturnValue({
+      v2: {
+        me: vi.fn().mockResolvedValue({ data: { id: 'me123' } }),
+        userMentionTimeline,
+      },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_mentions');
+    await tool.execute();
+    const opts = userMentionTimeline.mock.calls[0][1];
+    expect(opts).not.toHaveProperty('since_id');
+    expect(opts).not.toHaveProperty('start_time');
+  });
+});
+
+// ── behaviour: twitter_get_timeline time filtering ──────────────────────────
+
+describe('twitter_get_timeline time filtering', () => {
+  it('passes since_id and start_time to the API when provided', async () => {
+    const userTimeline = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', text: 'My tweet', created_at: '2025-01-01T10:00:00Z' }] },
+    });
+    getClient.mockReturnValue({
+      v2: {
+        userByUsername: vi.fn().mockResolvedValue({ data: { id: 'uid1' } }),
+        userTimeline,
+      },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_timeline');
+    await tool.execute({ username: 'testuser', sinceId: '300', startTime: '2025-01-01T00:00:00Z' });
+    expect(userTimeline).toHaveBeenCalledWith('uid1', expect.objectContaining({
+      since_id: '300',
+      start_time: '2025-01-01T00:00:00Z',
+    }));
+  });
+
+  it('does not include since_id or start_time when not provided', async () => {
+    const userTimeline = vi.fn().mockResolvedValue({
+      data: { data: [{ id: '111', text: 'My tweet', created_at: '2025-01-01T10:00:00Z' }] },
+    });
+    getClient.mockReturnValue({
+      v2: {
+        userByUsername: vi.fn().mockResolvedValue({ data: { id: 'uid1' } }),
+        userTimeline,
+      },
+    });
+    const tool = tools.find(t => t.name === 'twitter_get_timeline');
+    await tool.execute({ username: 'testuser' });
+    const opts = userTimeline.mock.calls[0][1];
+    expect(opts).not.toHaveProperty('since_id');
+    expect(opts).not.toHaveProperty('start_time');
   });
 });
 

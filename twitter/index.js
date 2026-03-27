@@ -7,6 +7,9 @@
  *   Write (moderate) : twitter_like_tweet, twitter_retweet
  *   Write (dangerous): twitter_post_tweet, twitter_reply_to_tweet, twitter_follow_user
  *
+ * Search, mentions, and timeline tools support optional sinceId / startTime
+ * parameters for time-period filtering (useful for scheduled/automated workflows).
+ *
  * Requires Twitter/X Basic tier API access ($100/month) for read tools.
  * Set TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN,
  * and TWITTER_ACCESS_TOKEN_SECRET in your environment.
@@ -47,7 +50,7 @@ function handleError(err) {
 
 const twitter_search_tweets = {
   name: 'twitter_search_tweets',
-  description: 'Search recent tweets matching a query. Returns tweet text, author ID, and timestamp. Uses Twitter API v2 recent search (requires Basic tier access).',
+  description: 'Search recent tweets matching a query. Returns tweet text, author ID, and timestamp. Uses Twitter API v2 recent search (requires Basic tier access). Supports optional sinceId/startTime for time-period filtering.',
   riskLevel: 'safe',
   parameters: {
     type: 'object',
@@ -60,19 +63,30 @@ const twitter_search_tweets = {
         type: 'number',
         description: 'Number of results to return (10–100). Defaults to 10.',
       },
+      sinceId: {
+        type: 'string',
+        description: 'Only return tweets with an ID greater than this (newer tweets only).',
+      },
+      startTime: {
+        type: 'string',
+        description: 'Only return tweets created after this ISO 8601 timestamp, e.g. "2026-03-27T10:00:00Z".',
+      },
     },
     required: ['query'],
   },
-  execute: async ({ query, maxResults = 10 }) => {
+  execute: async ({ query, maxResults = 10, sinceId, startTime }) => {
     try {
       const client = getClient();
       const count = Math.min(100, Math.max(10, maxResults));
-      const res = await client.v2.search(query, {
+      const opts = {
         max_results: count,
         'tweet.fields': ['author_id', 'created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
         expansions: ['author_id'],
         'user.fields': ['username'],
-      });
+      };
+      if (sinceId) opts.since_id = sinceId;
+      if (startTime) opts.start_time = startTime;
+      const res = await client.v2.search(query, opts);
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return 'No tweets found for that query.';
       const users = {};
@@ -133,7 +147,7 @@ const twitter_get_user = {
 
 const twitter_get_timeline = {
   name: 'twitter_get_timeline',
-  description: "Get the most recent tweets from a specific user's timeline by username.",
+  description: "Get the most recent tweets from a specific user's timeline by username. Supports optional sinceId/startTime for time-period filtering.",
   riskLevel: 'safe',
   parameters: {
     type: 'object',
@@ -146,19 +160,30 @@ const twitter_get_timeline = {
         type: 'number',
         description: 'Number of tweets to return (5–100). Defaults to 10.',
       },
+      sinceId: {
+        type: 'string',
+        description: 'Only return tweets with an ID greater than this (newer tweets only).',
+      },
+      startTime: {
+        type: 'string',
+        description: 'Only return tweets created after this ISO 8601 timestamp, e.g. "2026-03-27T10:00:00Z".',
+      },
     },
     required: ['username'],
   },
-  execute: async ({ username, maxResults = 10 }) => {
+  execute: async ({ username, maxResults = 10, sinceId, startTime }) => {
     try {
       const client = getClient();
       const userRes = await client.v2.userByUsername(username);
       if (!userRes.data) return `User @${username} not found.`;
       const count = Math.min(100, Math.max(5, maxResults));
-      const res = await client.v2.userTimeline(userRes.data.id, {
+      const opts = {
         max_results: count,
         'tweet.fields': ['created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
-      });
+      };
+      if (sinceId) opts.since_id = sinceId;
+      if (startTime) opts.start_time = startTime;
+      const res = await client.v2.userTimeline(userRes.data.id, opts);
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return `No recent tweets found for @${username}.`;
       return tweets
@@ -177,7 +202,7 @@ const twitter_get_timeline = {
 
 const twitter_get_mentions = {
   name: 'twitter_get_mentions',
-  description: "Fetch recent tweets that @-mention the authenticated account.",
+  description: "Fetch recent tweets that @-mention the authenticated account. Supports optional sinceId/startTime for time-period filtering.",
   riskLevel: 'safe',
   parameters: {
     type: 'object',
@@ -186,20 +211,31 @@ const twitter_get_mentions = {
         type: 'number',
         description: 'Number of mentions to return (5–100). Defaults to 20.',
       },
+      sinceId: {
+        type: 'string',
+        description: 'Only return mentions with an ID greater than this (newer mentions only).',
+      },
+      startTime: {
+        type: 'string',
+        description: 'Only return mentions created after this ISO 8601 timestamp, e.g. "2026-03-27T10:00:00Z".',
+      },
     },
     required: [],
   },
-  execute: async ({ maxResults = 20 } = {}) => {
+  execute: async ({ maxResults = 20, sinceId, startTime } = {}) => {
     try {
       const client = getClient();
       const me = await client.v2.me();
       const count = Math.min(100, Math.max(5, maxResults));
-      const res = await client.v2.userMentionTimeline(me.data.id, {
+      const opts = {
         max_results: count,
         'tweet.fields': ['author_id', 'created_at', 'text', 'in_reply_to_user_id', 'referenced_tweets', 'conversation_id'],
         expansions: ['author_id'],
         'user.fields': ['username'],
-      });
+      };
+      if (sinceId) opts.since_id = sinceId;
+      if (startTime) opts.start_time = startTime;
+      const res = await client.v2.userMentionTimeline(me.data.id, opts);
       const tweets = res.data?.data ?? [];
       if (!tweets.length) return 'No recent mentions found.';
       // Build author_id → username lookup from includes

@@ -66,12 +66,14 @@ Then restart Goose. The plugin is auto-discovered via the `@goose-plugins/*` nam
 
 | Tool | Description |
 |------|-------------|
-| `twitter_search_tweets` | Search recent tweets by query (e.g. `"#nodejs"`, `"from:nasa"`) |
+| `twitter_search_tweets` | Search recent tweets by query (e.g. `"#nodejs"`, `"from:nasa"`). Optional `sinceId`/`startTime` filtering. |
 | `twitter_get_user` | Get a user's public profile (name, bio, follower/following/tweet counts) |
-| `twitter_get_timeline` | Get a user's recent tweets by username |
-| `twitter_get_mentions` | Get recent tweets that @-mention the authenticated account |
+| `twitter_get_timeline` | Get a user's recent tweets by username. Optional `sinceId`/`startTime` filtering. |
+| `twitter_get_mentions` | Get recent tweets that @-mention the authenticated account. Optional `sinceId`/`startTime` filtering. |
 | `twitter_get_home_feed` | Get the authenticated account's home timeline |
 | `twitter_get_tweet` | Fetch a single tweet by ID or URL |
+
+> **Time-period filtering:** `twitter_search_tweets`, `twitter_get_timeline`, and `twitter_get_mentions` accept optional `sinceId` (only tweets newer than this ID) and `startTime` (ISO 8601 timestamp, e.g. `"2026-03-27T10:00:00Z"`). This is useful in scheduled missions to avoid processing tweets that were already handled in a previous run.
 
 ### Write tools — moderate (run automatically with a warning)
 
