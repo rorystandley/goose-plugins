@@ -67,17 +67,14 @@ What are the top posts in r/selfhosted this week?
 Pull the newest 5 posts from r/LocalLLaMA
 ```
 
-## Rationale
+## Why use this instead of `web_search`?
 
-This plugin replaces `web_search("site:reddit.com …")` as goose's Reddit surface. Google search returns titles and 150-character snippets; that is not enough for the LLM to quote a post without filling gaps. With `reddit_get_post` the model can pull the full selftext and top comments and quote from them directly, which stops the fabricated-quote failure mode observed in the pain-scanner mission.
+Without this plugin, Goose reads Reddit through generic web search with a `site:reddit.com` filter. Search engines return titles and 150-character snippets — not enough for the LLM to quote a post accurately, so it fills the gaps. The result is reports that contain invented quotes, stale posts labelled as "hot," and claims that contradict the linked thread.
 
-See `SPEC.md` for the full design, including the mission-prompt changes needed to enforce grounding.
+This plugin gives Goose direct, structured access to Reddit:
 
-## Publishing
+- **Full post text**, not snippets — `reddit_get_post` returns the complete selftext plus the top comments, so the LLM quotes from what Reddit actually returned.
+- **Real metadata** — score, comment count, created date, subreddit, author — so Goose can filter for recency and engagement instead of trusting a search engine's ranking.
+- **Subreddit scoping** — search one community, or list its top/new posts directly, without hoping Google picked the right thread.
 
-Tag-based publishing via CI:
-
-```bash
-git tag reddit-v1.0.0
-git push origin reddit-v1.0.0
-```
+If you ask Goose to research a topic on Reddit, summarise a thread, or monitor a subreddit, installing this plugin makes those answers accurate and citable rather than approximate.
