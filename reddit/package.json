@@ -1,0 +1,44 @@
+{
+  "name": "@goose-plugins/reddit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Reddit plugin for Goose — read-only search and retrieval of posts and comments",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "goose",
+    "goose-plugins",
+    "reddit"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rorystandley/goose-plugins.git",
+    "directory": "reddit"
+  },
+  "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/reddit",
+  "bugs": {
+    "url": "https://github.com/rorystandley/goose-plugins/issues"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
