@@ -6,6 +6,13 @@ vi.mock('../client.js', () => ({
   getClient: vi.fn(),
 }));
 
+vi.mock('fs', async () => {
+  const actual = await vi.importActual('fs');
+  return { ...actual, default: { ...actual, appendFileSync: vi.fn() } };
+});
+
+import fs from 'fs';
+
 import { getClient } from '../client.js';
 import { tools } from '../index.js';
 
@@ -20,8 +27,8 @@ describe('tools export', () => {
     expect(Array.isArray(tools)).toBe(true);
   });
 
-  it('exports all 11 tools when no tier is set (defaults to basic)', () => {
-    expect(tools).toHaveLength(11);
+  it('exports all 12 tools when no tier is set (defaults to basic)', () => {
+    expect(tools).toHaveLength(12);
   });
 
   it('exports the correct tool names in order', () => {
@@ -37,6 +44,7 @@ describe('tools export', () => {
       'twitter_post_tweet',
       'twitter_reply_to_tweet',
       'twitter_follow_user',
+      'twitter_log_tweet',
     ]);
   });
 });
@@ -56,11 +64,11 @@ describe('TWITTER_API_TIER filtering', () => {
     vi.resetModules();
   });
 
-  it('basic tier exports all 11 tools', async () => {
+  it('basic tier exports all 12 tools', async () => {
     vi.stubEnv('TWITTER_API_TIER', 'basic');
     vi.resetModules();
     const { tools: tieredTools } = await import('../index.js');
-    expect(tieredTools).toHaveLength(11);
+    expect(tieredTools).toHaveLength(12);
     vi.unstubAllEnvs();
     vi.resetModules();
   });
@@ -69,7 +77,7 @@ describe('TWITTER_API_TIER filtering', () => {
     vi.stubEnv('TWITTER_API_TIER', 'enterprise');
     vi.resetModules();
     const { tools: tieredTools } = await import('../index.js');
-    expect(tieredTools).toHaveLength(11);
+    expect(tieredTools).toHaveLength(12);
     vi.unstubAllEnvs();
     vi.resetModules();
   });
@@ -106,9 +114,9 @@ describe('each tool has required Goose plugin interface fields', () => {
     }
   });
 
-  it('read tools have riskLevel "safe"', () => {
-    const readTools = ['twitter_search_tweets', 'twitter_get_user', 'twitter_get_timeline', 'twitter_get_mentions', 'twitter_get_home_feed', 'twitter_get_tweet'];
-    for (const name of readTools) {
+  it('read and local tools have riskLevel "safe"', () => {
+    const safeTools = ['twitter_search_tweets', 'twitter_get_user', 'twitter_get_timeline', 'twitter_get_mentions', 'twitter_get_home_feed', 'twitter_get_tweet', 'twitter_log_tweet'];
+    for (const name of safeTools) {
       const tool = tools.find(t => t.name === name);
       expect(tool.riskLevel, `${name} should be safe`).toBe('safe');
     }
@@ -625,5 +633,54 @@ describe('credits depleted handling', () => {
     expect(result).toContain('credits depleted');
     expect(result).toContain('402');
     expect(result).toContain('monthly reset');
+  });
+});
+
+// ── behaviour: twitter_log_tweet ──────────────────────────────────────────────
+
+describe('twitter_log_tweet', () => {
+  it('appends a JSONL entry to the history file', async () => {
+    const tool = tools.find(t => t.name === 'twitter_log_tweet');
+    const result = await tool.execute({
+      content: 'Test tweet about local AI',
+      topic: 'local AI',
+      angle: 'hot take',
+    });
+    expect(result).toContain('Logged tweet');
+    expect(fs.appendFileSync).toHaveBeenCalledTimes(1);
+    const [, data] = fs.appendFileSync.mock.calls[0];
+    const entry = JSON.parse(data.trim());
+    expect(entry.content).toBe('Test tweet about local AI');
+    expect(entry.topic).toBe('local AI');
+    expect(entry.angle).toBe('hot take');
+    expect(entry.timestamp).toBeDefined();
+  });
+
+  it('defaults topic and angle to empty strings', async () => {
+    const tool = tools.find(t => t.name === 'twitter_log_tweet');
+    await tool.execute({ content: 'Minimal tweet' });
+    const [, data] = fs.appendFileSync.mock.calls[0];
+    const entry = JSON.parse(data.trim());
+    expect(entry.topic).toBe('');
+    expect(entry.angle).toBe('');
+  });
+
+  it('truncates content to 280 characters', async () => {
+    const tool = tools.find(t => t.name === 'twitter_log_tweet');
+    const longContent = 'A'.repeat(300);
+    await tool.execute({ content: longContent });
+    const [, data] = fs.appendFileSync.mock.calls[0];
+    const entry = JSON.parse(data.trim());
+    expect(entry.content).toHaveLength(280);
+  });
+
+  it('returns error message on write failure', async () => {
+    fs.appendFileSync.mockImplementationOnce(() => {
+      throw new Error('ENOENT: no such file or directory');
+    });
+    const tool = tools.find(t => t.name === 'twitter_log_tweet');
+    const result = await tool.execute({ content: 'fail tweet' });
+    expect(result).toContain('Failed to log tweet');
+    expect(result).toContain('ENOENT');
   });
 });

@@ -1,9 +1,10 @@
 /**
  * Twitter plugin for Goose.
  *
- * Provides 11 tools for interacting with Twitter/X as an assigned account:
+ * Provides 12 tools for interacting with Twitter/X as an assigned account:
  *   Read  (safe)     : twitter_search_tweets, twitter_get_user, twitter_get_timeline,
  *                      twitter_get_mentions, twitter_get_home_feed, twitter_get_tweet
+ *   Local (safe)     : twitter_log_tweet
  *   Write (moderate) : twitter_like_tweet, twitter_retweet
  *   Write (dangerous): twitter_post_tweet, twitter_reply_to_tweet, twitter_follow_user
  *
@@ -16,6 +17,8 @@
  */
 
 import { getClient } from './client.js';
+import fs from 'fs';
+import path from 'path';
 
 // ---------------------------------------------------------------------------
 // Shared error formatter
@@ -493,6 +496,49 @@ const twitter_follow_user = {
 };
 
 // ---------------------------------------------------------------------------
+// Local history tool (safe — writes to local JSONL file only)
+// ---------------------------------------------------------------------------
+
+const twitter_log_tweet = {
+  name: 'twitter_log_tweet',
+  description: 'Append a posted tweet to the local tweet history log (data/tweet-history.jsonl). Used to track what has been tweeted so future tweets avoid repetition. Does not call the Twitter API.',
+  riskLevel: 'safe',
+  parameters: {
+    type: 'object',
+    properties: {
+      content: {
+        type: 'string',
+        description: 'The tweet text that was posted',
+      },
+      topic: {
+        type: 'string',
+        description: 'Short topic label, e.g. "privacy", "cloud outage", "local AI speed"',
+      },
+      angle: {
+        type: 'string',
+        description: 'The creative angle used, e.g. "sarcasm", "hot take", "self-deprecation"',
+      },
+    },
+    required: ['content'],
+  },
+  execute: async ({ content, topic = '', angle = '' }) => {
+    try {
+      const historyPath = path.join(process.cwd(), 'data', 'tweet-history.jsonl');
+      const entry = JSON.stringify({
+        content: content.slice(0, 280),
+        topic,
+        angle,
+        timestamp: new Date().toISOString(),
+      });
+      fs.appendFileSync(historyPath, entry + '\n', 'utf8');
+      return `Logged tweet to history: "${content.slice(0, 60)}..."`;
+    } catch (err) {
+      return `Failed to log tweet: ${err.message}`;
+    }
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Plugin export — filtered by TWITTER_API_TIER
 //
 // Set TWITTER_API_TIER in your environment to match your Twitter/X access level:
@@ -512,6 +558,7 @@ const ALL_TOOLS = [
   twitter_post_tweet,
   twitter_reply_to_tweet,
   twitter_follow_user,
+  twitter_log_tweet,
 ];
 
 const TIER_TOOL_NAMES = {
