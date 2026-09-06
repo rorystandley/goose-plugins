@@ -12,6 +12,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 |---|---|
 | [`@goose-plugins/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
 | [`@goose-plugins/backup`](./backup) | Deterministic data directory snapshots with automatic pruning |
+| [`@goose-plugins/github`](./github) | GitHub repository tools and verified Dependabot PR maintenance |
 | [`@goose-plugins/twitter`](./twitter) | Read and write tweets as the assigned Twitter/X account |
 
 ---
@@ -21,6 +22,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 ```bash
 npm install @goose-plugins/architecture
 npm install @goose-plugins/backup
+npm install @goose-plugins/github
 npm install @goose-plugins/twitter
 ```
 

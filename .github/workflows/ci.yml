@@ -18,6 +18,7 @@ jobs:
       architecture: ${{ steps.filter.outputs.architecture }}
       twitter: ${{ steps.filter.outputs.twitter }}
       backup: ${{ steps.filter.outputs.backup }}
+      github: ${{ steps.filter.outputs.github }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -32,6 +33,9 @@ jobs:
               - '.github/workflows/ci.yml'
             backup:
               - 'backup/**'
+              - '.github/workflows/ci.yml'
+            github:
+              - 'github/**'
               - '.github/workflows/ci.yml'
 
   # ── @goose-tools/architecture ──────────────────────────────────────────────
@@ -119,6 +123,28 @@ jobs:
 
       - run: npm ci
 
+      - run: npm test
+
+  test-github:
+    needs: changes
+    if: needs.changes.outputs.github == 'true'
+    name: github / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18.x', '20.x', '22.x']
+    defaults:
+      run:
+        working-directory: github
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: github/package-lock.json
+      - run: npm ci
       - run: npm test
 
   # ── add future plugins below ───────────────────────────────────────────────

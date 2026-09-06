@@ -1,0 +1,9 @@
+{
+  "name": "github-dependabot",
+  "cron": "*/30 * * * *",
+  "timezone": "Europe/London",
+  "enabled": true,
+  "direct": "github_maintain_dependabot",
+  "directArgs": { "dryRun": false },
+  "allowDangerous": true
+}

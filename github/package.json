@@ -1,0 +1,14 @@
+{
+  "name": "@goose-plugins/github",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "GitHub repository tools and verified Dependabot maintenance for Goose",
+  "exports": { ".": "./index.js" },
+  "files": ["index.js", "client.js", "dependabot.js", "README.md", "mission.example.json"],
+  "scripts": { "test": "node --test tests/*.test.js" },
+  "engines": { "node": ">=18.0.0" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "keywords": ["goose", "goose-plugins", "github", "dependabot"],
+  "repository": { "type": "git", "url": "git+https://github.com/rorystandley/goose-plugins.git", "directory": "github" },
+  "license": "MIT"
+}
