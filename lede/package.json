@@ -1,6 +1,6 @@
 {
   "name": "@goose-plugins/lede",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Lede news reader for Goose — relevant briefings, article search, reading and feed management",
   "exports": { ".": "./index.js" },

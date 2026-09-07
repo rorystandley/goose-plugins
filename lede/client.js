@@ -1,22 +1,26 @@
-const DEFAULT_URL = 'https://lede.rorystandley.co.uk';
-
 export class LedeError extends Error {}
 
 export function connectionInfo(env = process.env) {
+  const rawBaseUrl = env.LEDE_BASE_URL?.trim();
+  const apiKeyConfigured = Boolean(env.LEDE_API_KEY?.trim());
+  if (!rawBaseUrl) {
+    return { baseUrl: null, configured: false, baseUrlConfigured: false, apiKeyConfigured };
+  }
   let url;
-  try { url = new URL(env.LEDE_BASE_URL || DEFAULT_URL); }
+  try { url = new URL(rawBaseUrl); }
   catch { throw new LedeError('LEDE_BASE_URL must be an HTTPS origin.'); }
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   if ((url.protocol !== 'https:' && !(local && url.protocol === 'http:')) ||
       url.username || url.password || url.search || url.hash || url.pathname !== '/') {
     throw new LedeError('LEDE_BASE_URL must be an HTTPS origin (HTTP is allowed only on loopback). Do not include /api/v1 or credentials.');
   }
-  return { baseUrl: url.origin, configured: Boolean(env.LEDE_API_KEY?.trim()) };
+  return { baseUrl: url.origin, configured: apiKeyConfigured, baseUrlConfigured: true, apiKeyConfigured };
 }
 
 // Lazy configuration: plugin discovery never needs credentials or network access.
 export function createClient({ env = process.env, fetchFn = globalThis.fetch } = {}) {
   const { baseUrl, configured } = connectionInfo(env);
+  if (!baseUrl) throw new LedeError('Set LEDE_BASE_URL to your Lede app origin, for example https://your-lede.example.com.');
   if (!configured) throw new LedeError('Set LEDE_API_KEY in Goose’s environment to a Lede nrk_ API key, then restart Goose and its scheduler.');
   const token = env.LEDE_API_KEY.trim();
   const timeout = Number(env.LEDE_TIMEOUT_MS || 15000);
