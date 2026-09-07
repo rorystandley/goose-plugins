@@ -47,7 +47,7 @@ const pageQuery = args => ({ page: 1, pageSize: 20, ...args });
 export const tools = [
   tool('lede_status', 'Check Lede configuration and authenticated connectivity without exposing the API key.', {}, [], async () => {
     const info = connectionInfo();
-    if (!info.configured) return { ...info, connected: false, nextStep: 'Set LEDE_API_KEY in Goose’s environment and restart Goose and its scheduler.' };
+    if (!info.configured) return { ...info, connected: false, nextStep: 'Set LEDE_BASE_URL to your Lede origin and LEDE_API_KEY to a Lede nrk_ API key, then restart Goose and its scheduler.' };
     const profile = await request('/user/profile');
     if (!profile?.id) throw new LedeError('Unexpected Lede profile response.');
     return { ...info, connected: true, displayName: profile.displayName, timezone: profile.timezone };

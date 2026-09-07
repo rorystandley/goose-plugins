@@ -1,6 +1,6 @@
 # @goose-plugins/lede
 
-Connect Goose to your Lede news reader using its authenticated REST API. Includes 14 native Goose tools, relevant news gathering, and examples for the Goose command centre’s Missions and Monitors views. No runtime dependencies; Node 18+.
+Connect Goose to [Lede](https://github.com/rorystandley/lede/), a self-hosted news reader, using its authenticated REST API. Includes 14 native Goose tools, relevant news gathering, and examples for the Goose command centre’s Missions and Monitors views. No runtime dependencies; Node 18+.
 
 ## Why native REST tools
 
@@ -20,7 +20,7 @@ npm run plugins:link
 Add to Goose’s `.env` (or its service environment):
 
 ```dotenv
-LEDE_BASE_URL=https://lede.rorystandley.co.uk
+LEDE_BASE_URL=https://your-lede.example.com
 LEDE_API_KEY=nrk_your_personal_api_key
 # Optional request timeout, in milliseconds; default 15000
 LEDE_TIMEOUT_MS=15000
@@ -30,7 +30,7 @@ Use an existing personal Lede API key or create a dedicated key named `Goose` th
 
 Restart Goose and `goose-scheduler` using your existing service manager. Configuration is lazy: importing the plugin needs no credentials and does not contact Lede. In command centre Chat, ask **“Check my Lede connection.”** `lede_status` verifies authenticated access and returns no key or email address.
 
-`LEDE_BASE_URL` is the origin only, without `/api/v1`. HTTPS is required except for local development at `http://localhost:3000` or a loopback IP. Redirects are refused. HTTP bodies and transport errors are not echoed, and writes are never automatically retried after a timeout or network failure.
+`LEDE_BASE_URL` is required and must be the origin of your own Lede deployment, without `/api/v1`; the plugin has no hosted default. HTTPS is required except for local development at `http://localhost:3000` or a loopback IP. Redirects are refused. HTTP bodies and transport errors are not echoed, and writes are never automatically retried after a timeout or network failure.
 
 ## Command centre
 

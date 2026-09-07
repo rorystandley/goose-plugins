@@ -10,7 +10,7 @@ const article = (n, values = {}) => ({ id: id(n), feedId: id(90), title: 'News s
   url: `https://example.com/story/${n}`, feedTitle: 'Example', summary: 'Article excerpt',
   contentText: 'Full article text', createdAt: '2026-09-06T10:00:00Z', publishedAt: '2026-09-06T09:00:00Z',
   isRead: false, isStarred: false, isArchived: false, ...values });
-const env = { LEDE_API_KEY: 'nrk_test-secret' };
+const env = { LEDE_BASE_URL: 'https://your-lede.example.com', LEDE_API_KEY: 'nrk_test-secret' };
 const run = (name, args) => tools.find(tool => tool.name === name).execute(args);
 
 function fixture(t, handle) {
@@ -18,7 +18,7 @@ function fixture(t, handle) {
   const oldUrl = process.env.LEDE_BASE_URL;
   const oldFetch = globalThis.fetch;
   process.env.LEDE_API_KEY = env.LEDE_API_KEY;
-  delete process.env.LEDE_BASE_URL;
+  process.env.LEDE_BASE_URL = 'https://your-lede.example.com';
   const calls = [];
   globalThis.fetch = async (url, options) => {
     calls.push({ url, ...options });
@@ -61,6 +61,16 @@ test('origin validation prevents credential destinations in paths and insecure r
     assert.throws(() => connectionInfo({ LEDE_BASE_URL: base }));
   }
   assert.equal(connectionInfo({ LEDE_BASE_URL: 'http://127.0.0.1:3000' }).baseUrl, 'http://127.0.0.1:3000');
+});
+
+test('a self-hosted Lede origin is required and no personal deployment is the default', async t => {
+  const calls = fixture(t, () => assert.fail('No request expected'));
+  delete process.env.LEDE_BASE_URL;
+  const info = connectionInfo({ LEDE_API_KEY: env.LEDE_API_KEY });
+  assert.equal(info.baseUrl, null);
+  assert.equal(info.baseUrlConfigured, false);
+  assert.match(await run('lede_list_articles'), /^Error: Set LEDE_BASE_URL to your Lede app origin/);
+  assert.equal(calls.length, 0);
 });
 
 test('REST contract: bearer auth, versioned path, false booleans and pagination', async t => {

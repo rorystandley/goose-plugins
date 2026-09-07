@@ -1,7 +1,7 @@
 {
   "name": "lede-health",
   "type": "url",
-  "url": "https://lede.rorystandley.co.uk/api/health/ready",
+  "url": "https://your-lede.example.com/api/health/ready",
   "interval": "5m",
   "cooldown": "30m",
   "enabled": false,
