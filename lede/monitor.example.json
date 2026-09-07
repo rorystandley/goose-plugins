@@ -1,0 +1,10 @@
+{
+  "name": "lede-health",
+  "type": "url",
+  "url": "https://lede.rorystandley.co.uk/api/health/ready",
+  "interval": "5m",
+  "cooldown": "30m",
+  "enabled": false,
+  "contextId": "monitor-lede-health",
+  "task": "Lede readiness check at {url} returned {status}. Report the current availability briefly, distinguishing an outage from recovery when the status is successful. Do not change the server or subscriptions."
+}

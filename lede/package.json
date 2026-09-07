@@ -1,0 +1,14 @@
+{
+  "name": "@goose-plugins/lede",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lede news reader for Goose — relevant briefings, article search, reading and feed management",
+  "exports": { ".": "./index.js" },
+  "files": ["index.js", "client.js", "briefing.js", "README.md", "mission.example.json", "monitor.example.json"],
+  "scripts": { "test": "node --test tests/*.test.js" },
+  "engines": { "node": ">=18.0.0" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "keywords": ["goose", "goose-plugins", "lede", "news", "briefing"],
+  "repository": { "type": "git", "url": "git+https://github.com/rorystandley/goose-plugins.git", "directory": "lede" },
+  "license": "MIT"
+}
