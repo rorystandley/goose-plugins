@@ -69,14 +69,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: npm
-          cache-dependency-path: ${{ steps.tag.outputs.package }}/package-lock.json
 
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
 
-      - run: npm ci
-        working-directory: ${{ steps.tag.outputs.package }}
+      # Tests already ran. npm@latest's ci rejects vitest lockfiles that
+      # omit unused optional platform packages; publish only needs source.
 
       - name: Set version from tag
         run: npm version "${{ steps.tag.outputs.version }}" --no-git-tag-version --allow-same-version

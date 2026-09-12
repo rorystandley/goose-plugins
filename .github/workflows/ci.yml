@@ -20,6 +20,7 @@ jobs:
       backup: ${{ steps.filter.outputs.backup }}
       github: ${{ steps.filter.outputs.github }}
       lede: ${{ steps.filter.outputs.lede }}
+      crypto: ${{ steps.filter.outputs.crypto }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -40,6 +41,9 @@ jobs:
               - '.github/workflows/ci.yml'
             github:
               - 'github/**'
+              - '.github/workflows/ci.yml'
+            crypto:
+              - 'crypto/**'
               - '.github/workflows/ci.yml'
 
   # ── @goose-tools/architecture ──────────────────────────────────────────────
@@ -151,11 +155,6 @@ jobs:
       - run: npm ci
       - run: npm test
 
-  # ── add future plugins below ───────────────────────────────────────────────
-  # 1. Add a filter entry above: my-plugin: - 'my-plugin/**'
-  # 2. Copy this job, rename it test-<my-plugin>, set needs.changes.outputs.<my-plugin>
-  #    and update working-directory + cache-dependency-path accordingly.
-
   test-lede:
     needs: changes
     if: needs.changes.outputs.lede == 'true'
@@ -177,3 +176,30 @@ jobs:
           cache-dependency-path: lede/package-lock.json
       - run: npm ci
       - run: npm test
+
+  test-crypto:
+    needs: changes
+    if: needs.changes.outputs.crypto == 'true'
+    name: crypto / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20.x', '22.x']
+    defaults:
+      run:
+        working-directory: crypto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: crypto/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  # ── add future plugins below ───────────────────────────────────────────────
+  # 1. Add a filter entry above: my-plugin: - 'my-plugin/**'
+  # 2. Copy this job, rename it test-<my-plugin>, set needs.changes.outputs.<my-plugin>
+  #    and update working-directory + cache-dependency-path accordingly.
