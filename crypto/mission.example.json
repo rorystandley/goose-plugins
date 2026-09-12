@@ -1,0 +1,12 @@
+{
+  "name": "crypto-morning-digest",
+  "cron": "0 8 * * *",
+  "timezone": "Europe/London",
+  "enabled": false,
+  "contextId": "mission-crypto-morning-digest",
+  "freshContext": true,
+  "maxIterations": 4,
+  "task": "Call crypto_list_watchlist, then crypto_get_market with those symbols. Summarise prices and 24h moves in a short briefing. Do not invent numbers — use only tool results. If a tool returns Error:, say so clearly.",
+  "notifySlack": false,
+  "speak": false
+}
