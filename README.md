@@ -12,6 +12,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 |---|---|
 | [`@goose-plugins/architecture`](./architecture) | Architecture memory and C4 Context diagram generator |
 | [`@goose-plugins/backup`](./backup) | Deterministic data directory snapshots with automatic pruning |
+| [`@goose-plugins/crypto`](./crypto) | Crypto watchlist, spot prices, and a command-centre tile |
 | [`@goose-plugins/lede`](./lede) | Lede news search, relevant briefings and command centre missions |
 | [`@goose-plugins/github`](./github) | GitHub repository tools and verified Dependabot PR maintenance |
 | [`@goose-plugins/twitter`](./twitter) | Read and write tweets as the assigned Twitter/X account |
@@ -23,6 +24,7 @@ A collection of [Goose](https://github.com/rorystandley/goose) AI agent plugins,
 ```bash
 npm install @goose-plugins/architecture
 npm install @goose-plugins/backup
+npm install @goose-plugins/crypto
 npm install @goose-plugins/github
 npm install @goose-plugins/twitter
 ```
@@ -92,7 +94,7 @@ git tag architecture-v1.2.0
 git push origin architecture-v1.2.0
 ```
 
-`publish.yml` picks up the tag and automatically:
+publish.yml picks up the tag and automatically:
 
 1. Extracts `package=architecture` and `version=1.2.0` from the tag
 2. Runs `npm test` inside `architecture/` — the publish is aborted if tests fail
