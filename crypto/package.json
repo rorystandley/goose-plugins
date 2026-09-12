@@ -1,1 +1,49 @@
-placeholder
+{
+  "name": "@goose-plugins/crypto",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Crypto price tracking for Goose — watchlist, spot prices, and a command-centre tile",
+  "exports": {
+    ".": "./index.js",
+    "./store.js": "./store.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "store.js",
+    "README.md",
+    "mission.example.json"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "goose",
+    "goose-plugins",
+    "crypto",
+    "coingecko",
+    "prices"
+  ],
+  "license": "MIT",
+  "author": "Rory Standley",
+  "homepage": "https://github.com/rorystandley/goose-plugins/tree/main/crypto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rorystandley/goose-plugins.git",
+    "directory": "crypto"
+  },
+  "bugs": {
+    "url": "https://github.com/rorystandley/goose-plugins/issues"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
